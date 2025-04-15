@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  frontend:
+    image: razzak2007/immo-trend:latest
+    restart: always
+    container_name: immotrend-frontend
+    ports:
+      - "4200:4200"
+  #  depends_on:
+  #    - immotrend-backend
+    deploy:
+      resources:
+        limits:
+          memory: 700m
+    networks:
+      - app-network
+
+  python-api:
+    image: razzak2007/house-price-api:latest
+    restart: always
+    container_name: python-api
+    ports:
+      - "8000:8000"
+    deploy:
+      resources:
+        limits:
+          memory: 700m
+    environment:
+      SPRING_APPLICATION_NAME: eureka-server
+
+    networks:
+      - app-network
+
+  db:
+    image: postgres:latest
+    container_name: plateforme-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: dbname
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+
+
+volumes:
+  db-data:
+
+networks:
+  app-network:
+    driver: bridge
